@@ -193,6 +193,7 @@
       var $pc      = document.getElementById("pc");
       var $vid     = document.getElementById("v");
       var $search  = document.getElementById("channelSearch");
+      var $tgBadge = document.getElementById("tgBadge");
       var _stTmr   = null;
       var _allChannels = [];
 
@@ -226,7 +227,7 @@
           
           if (Array.isArray(son)) {
             for (var s = 0; s < son.length; s++) {
-              if (son[s] && son[s].includes(':')) {
+              if (son[s] && typeof son[s] === 'string' && son[s].includes(':')) {
                 var parts = son[s].split(':');
                 sonKeys.push({
                   key_id: parts[0].trim().toLowerCase(),
@@ -324,6 +325,8 @@
 
       async function startPlayer(ch){
         $pc.style.display = "flex";
+        if($tgBadge) $tgBadge.style.display = "none";
+        
         shaka.polyfill.installAll();
         if(!shaka.Player.isBrowserSupported()){ errMsg("Browser not supported."); return; }
 
@@ -406,9 +409,17 @@
           return;
         }
         var channels = data.channels || data;
-        if(!id){ renderList(channels); return; }
+        if(!id){ 
+          renderList(channels); 
+          if($tgBadge) $tgBadge.style.display = "inline-flex";
+          return; 
+        }
         var ch = channels.find(function(c){ return c.id === id; });
-        if(!ch){ errMsg("Channel not found."); return; }
+        if(!ch){ 
+          hideOverlay();
+          errMsg("Channel not found."); 
+          return; 
+        }
         document.title = ch.name + " · CricXCrate";
         await startPlayer(ch);
       }
